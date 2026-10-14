@@ -2,8 +2,8 @@ name: Radar Diario de Empleo
 
 on:
   schedule:
-    - cron: '0 11 * * *' # Corre automáticamente todos los días a las 11:00 UTC (8:00 AM Argentina)
-  workflow_dispatch: # Te permite ejecutarlo manualmente cuando quieras desde la pestaña Actions
+    - cron: '0 11 * * *'
+  workflow_dispatch:
 
 jobs:
   ejecutar-radar:
@@ -15,7 +15,13 @@ jobs:
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      - name: Ejecutar Buscador
+      - name: Ejecutar Buscador y Generar CSV
         run: python buscador.py
+
+      - name: Subir planilla como Artifact descargable
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-empleos-cordoba
+          path: resultados_empleo.csv
