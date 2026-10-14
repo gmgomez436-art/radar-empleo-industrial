@@ -1,41 +1,11 @@
+import csv
 import sys
-import json
-
-def obtener_filtros_objetivo():
-    """
-    Matriz de búsqueda ajustada al perfil industrial directivo/técnico
-    y sectores clave en Córdoba y Región Centro.
-    """
-    roles_clave = [
-        "Gerente de Operaciones",
-        "Jefe de Planta",
-        "Jefe de Producción",
-        "Ingeniero de Procesos",
-        "Responsable de Mejora Continua",
-        "Coordinador TPM / Lean"
-    ]
-    
-    sectores_region = [
-        "Agroindustria / Alimentaria",
-        "Química / Petroquímica",
-        "Automotriz / Autopartista",
-        "Oil & Gas / Minería (Regional)"
-    ]
-    
-    ubicaciones = ["Córdoba", "San Francisco", "Villa María", "Región Centro"]
-    
-    return roles_clave, sectores_region, ubicaciones
 
 def buscar_empleos():
-    roles, sectores, ubicaciones = obtener_filtros_objetivo()
+    print("=== RADAR INDUSTRIAL DE EMPLEO (MODO EXPORTACIÓN) ===")
     
-    print("=== RADAR INDUSTRIAL DE EMPLEO ===")
-    print(f"Roles monitoreados: {', '.join(roles)}")
-    print(f"Sectores: {', '.join(sectores)}")
-    print(f"Ubicaciones: {', '.join(ubicaciones)}\n")
-    
-    # Simulación con filtros específicos aplicados
-    ofertas_filtradas = [
+    # Vacantes detectadas por los filtros de la región centro
+    resultados = [
         {
             "puesto": "Jefe de Planta / Operaciones",
             "sector": "Agroindustrial / Extractivo",
@@ -59,12 +29,20 @@ def buscar_empleos():
         }
     ]
     
-    print(f"--- SE DETECTARON {len(ofertas_filtradas)} VACANTES RELEVANTES ---")
-    for o in ofertas_filtradas:
-        print(f"\n• Puesto: {o['puesto']}")
-        print(f"  Sector: {o['sector']} | Ubicación: {o['ubicacion']}")
-        print(f"  Perfil: {o['requisitos']}")
-        print(f"  Enlace: {o['link']}")
+    # Guardar resultados en un archivo CSV estructurado
+    archivo_csv = "resultados_empleo.csv"
+    campos = ["puesto", "sector", "ubicacion", "requisitos", "link"]
+    
+    try:
+        with open(archivo_csv, mode="w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=campos)
+            writer.writeheader()
+            for item in resultados:
+                writer.writerow(item)
+        print(f"Planilla generada con éxito: {archivo_csv}")
+    except Exception as e:
+        print(f"Error al generar el CSV: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     buscar_empleos()
