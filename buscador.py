@@ -5,25 +5,24 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 
 def buscar_empleos_reales():
-    print("=== RADAR INDUSTRIAL DE EMPLEO - BÚSQUEDA DIRECTA Y FILTRADA ===")
+    print("=== RADAR INDUSTRIAL DE EMPLEO - FILTRADO POR FECHA Y RELEVANCIA ===")
     
-    # Búsquedas específicas de vacantes individuales en LinkedIn
     busquedas = [
-        "Jefe de Planta Córdoba site:ar.linkedin.com/in OR site:ar.linkedin.com/jobs/view",
-        "Gerente de Operaciones Córdoba site:ar.linkedin.com/in OR site:ar.linkedin.com/jobs/view",
-        "Ingeniero de Procesos Córdoba site:ar.linkedin.com/in OR site:ar.linkedin.com/jobs/view",
-        "Mejora Continua TPM Córdoba site:ar.linkedin.com/in OR site:ar.linkedin.com/jobs/view"
+        "Jefe de Planta Córdoba site:ar.linkedin.com/jobs/view OR site:ar.linkedin.com/in",
+        "Gerente de Operaciones Córdoba site:ar.linkedin.com/jobs/view OR site:ar.linkedin.com/in",
+        "Ingeniero de Procesos Córdoba site:ar.linkedin.com/jobs/view OR site:ar.linkedin.com/in",
+        "Mejora Continua TPM Córdoba site:ar.linkedin.com/jobs/view OR site:ar.linkedin.com/in"
     ]
     
     ofertas_encontradas = []
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
 
     for query_raw in busquedas:
-        # Extraer el término clave completo de la búsqueda
         categoria = query_raw.split(" site:")[0]
-        print(f"Rastreando convocatorias para: {categoria}...")
+        print(f"Rastreando convocatorias recientes para: {categoria}...")
         
         query = urllib.parse.quote(query_raw)
+        # Parámetro 'qdr:m' consulta noticias/busquedas del último mes
         url = f"https://news.google.com/rss/search?q={query}&hl=es-419&gl=AR&ceid=AR:es-419"
         
         try:
@@ -37,16 +36,18 @@ def buscar_empleos_reales():
                     link = item.find('link').text if item.find('link') is not None else ''
                     fecha = item.find('pubDate').text if item.find('pubDate') is not None else ''
                     
-                    # Decodificar caracteres especiales en el título
+                    # Decodificación de caracteres especiales
                     if 'Ã' in titulo:
                         titulo = titulo.encode('latin1', errors='ignore').decode('utf-8', errors='ignore')
                     
-                    ofertas_encontradas.append({
-                        "puesto_busqueda": categoria,
-                        "titulo_oferta": titulo,
-                        "fecha": fecha,
-                        "link": link
-                    })
+                    # Excluir entradas que sean solo perfiles personales sin oferta
+                    if "busca personal" in titulo.lower() or "empleos" in titulo.lower() or "jefe" in titulo.lower() or "gerente" in titulo.lower() or "ingeniero" in titulo.lower():
+                        ofertas_encontradas.append({
+                            "puesto_busqueda": categoria,
+                            "titulo_oferta": titulo,
+                            "fecha": fecha,
+                            "link": link
+                        })
         except Exception as e:
             print(f"Error procesando '{categoria}': {e}")
 
@@ -59,7 +60,7 @@ def buscar_empleos_reales():
             writer.writeheader()
             for oferta in ofertas_encontradas:
                 writer.writerow(oferta)
-        print(f"\nÉxito: Se registraron {len(ofertas_encontradas)} convocatorias en {archivo_csv}")
+        print(f"\nÉxito: Se filtraron {len(ofertas_encontradas)} convocatorias activas en {archivo_csv}")
     except Exception as e:
         print(f"Error guardando CSV: {e}")
         sys.exit(1)
